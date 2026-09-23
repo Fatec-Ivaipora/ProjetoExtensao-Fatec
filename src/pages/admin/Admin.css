@@ -361,20 +361,50 @@
 .admin-list {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 18px;
+}
+
+.admin-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.admin-list-header h2 {
+  margin: 0;
 }
 
 .admin-empty {
   font-size: 0.9rem;
 }
 
+.admin-post-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 1000px) {
+  .admin-post-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-post-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .admin-post {
-  padding: 18px 22px;
+  padding: 18px 20px;
   border-left: 4px solid var(--orange);
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
+  gap: 14px;
 }
 
 .admin-post:hover {
@@ -438,15 +468,6 @@
   background: #f9e0dc;
 }
 
-.admin-editing-note {
-  font-size: 0.85rem;
-  background: #fff6ec;
-  border: 1px solid #f3d3ae;
-  border-radius: var(--radius);
-  padding: 10px 14px;
-  color: #8a5a1e;
-}
-
 .admin-file-note {
   font-size: 0.8rem;
   font-weight: 400;
@@ -475,6 +496,46 @@
 }
 
 .admin-cancel:hover {
+  color: var(--ink);
+}
+
+/* ---------- Modal de publicação ---------- */
+
+.admin-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(14, 30, 46, 0.55);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 20px;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.admin-modal {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+}
+
+.admin-modal:hover {
+  transform: none;
+}
+
+.admin-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  border: none;
+  background: none;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--ink-soft);
+  padding: 4px;
+}
+
+.admin-modal-close:hover {
   color: var(--ink);
 }
 

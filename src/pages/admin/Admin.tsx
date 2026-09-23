@@ -107,12 +107,12 @@ function AdminPanel() {
   const [openGroup, setOpenGroup] = useState<string>(() => groupOf('noticias'))
   const [posts, setPosts] = useState<Post[]>([])
   const [editing, setEditing] = useState<Post | null>(null)
+  const [modalOpen, setModalOpen] = useState(false)
   const [title, setTitle] = useState('')
   const [date, setDate] = useState('')
   const [excerpt, setExcerpt] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [fileKey, setFileKey] = useState(0)
-  const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -121,6 +121,15 @@ function AdminPanel() {
       .then(setPosts)
       .catch(() => setPosts([]))
   }, [section])
+
+  useEffect(() => {
+    if (!modalOpen) return
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') closeModal()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [modalOpen])
 
   function clearForm() {
     setEditing(null)
@@ -135,9 +144,14 @@ function AdminPanel() {
     setView('posts')
     setSection(s)
     setOpenGroup(groupOf(s))
-    setMessage('')
     setError('')
     clearForm()
+  }
+
+  function openCreate() {
+    clearForm()
+    setError('')
+    setModalOpen(true)
   }
 
   function startEdit(post: Post) {
@@ -147,9 +161,14 @@ function AdminPanel() {
     setExcerpt(post.excerpt ?? '')
     setFile(null)
     setFileKey((k) => k + 1)
-    setMessage('')
     setError('')
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    setModalOpen(true)
+  }
+
+  function closeModal() {
+    setModalOpen(false)
+    clearForm()
+    setError('')
   }
 
   function handleLogout() {
@@ -159,19 +178,17 @@ function AdminPanel() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError('')
-    setMessage('')
     setLoading(true)
     try {
       if (editing?.id) {
         const post = await updatePost(section, editing.id, { title, date, excerpt, file })
         setPosts((prev) => prev.map((p) => (p.id === post.id ? post : p)))
-        setMessage('Alterações salvas com sucesso!')
       } else {
         const post = await createPost(section, { title, date, excerpt, file })
         setPosts((prev) => [post, ...prev])
-        setMessage('Publicado com sucesso!')
       }
       clearForm()
+      setModalOpen(false)
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Falha ao salvar.'
       setError(msg)
@@ -258,119 +275,134 @@ function AdminPanel() {
           {view === 'highlights' && <HighlightsManager onAuthError={handleLogout} />}
           {view === 'posts' && (
           <>
-          <form className="admin-form card" onSubmit={handleSubmit}>
-            <h2>
-              {editing
-                ? `Editando publicação em ${SECTION_LABELS[section]}`
-                : `Nova publicação em ${SECTION_LABELS[section]}`}
-            </h2>
-            {editing && (
-              <p className="admin-editing-note">
-                Você está editando “{editing.title}”. Salve as alterações ou cancele para voltar a
-                criar uma nova publicação.
-              </p>
-            )}
-            <label>
-              Título *
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Ex.: Edital nº 06/2026 — Seleção de bolsistas"
-                required
-              />
-            </label>
-            <label>
-              Data / rótulo
-              <input
-                type="text"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                placeholder="Deixe em branco para usar a data de hoje (ou escreva “PDF”, um nome de autor…)"
-              />
-            </label>
-            <label>
-              Descrição
-              <textarea
-                value={excerpt}
-                onChange={(e) => setExcerpt(e.target.value)}
-                rows={3}
-                placeholder="Resumo curto exibido abaixo do título"
-              />
-            </label>
-            <label>
-              Arquivo (opcional — PDF, DOC…)
-              <input
-                key={fileKey}
-                type="file"
-                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-              />
-              {editing?.fileUrl && (
-                <span className="admin-file-note">
-                  Arquivo atual:{' '}
-                  <a href={editing.fileUrl} target="_blank" rel="noreferrer">
-                    abrir 📎
-                  </a>{' '}
-                  — envie um novo arquivo apenas se quiser substituí-lo.
-                </span>
-              )}
-            </label>
-            {error && <span className="admin-error">{error}</span>}
-            {message && <span className="admin-success">{message}</span>}
-            <div className="admin-form-actions">
-              <button className="btn btn-primary" type="submit" disabled={loading || !title.trim()}>
-                {loading ? 'Salvando…' : editing ? 'Salvar alterações' : 'Publicar'}
-              </button>
-              {editing && (
-                <button type="button" className="admin-cancel" onClick={clearForm}>
-                  Cancelar edição
-                </button>
-              )}
-            </div>
-          </form>
-
           <section className="admin-list">
-            <h2>Publicações no site — {SECTION_LABELS[section]}</h2>
+            <div className="admin-list-header">
+              <h2>Publicações no site — {SECTION_LABELS[section]}</h2>
+              <button type="button" className="btn btn-primary" onClick={openCreate}>
+                + Nova publicação
+              </button>
+            </div>
             {posts.length === 0 && (
               <p className="admin-empty">
                 Nada publicado pelo painel ainda nesta seção. O conteúdo fixo do site continua
                 aparecendo normalmente.
               </p>
             )}
-            {posts.map((post) => (
-              <article key={post.id} className="admin-post card">
-                <div>
-                  <span className="admin-post-date">{post.date}</span>
-                  <h3>
-                    {post.fileUrl ? (
-                      <a href={post.fileUrl} target="_blank" rel="noreferrer">
-                        {post.title} 📎
-                      </a>
-                    ) : (
-                      post.title
-                    )}
-                  </h3>
-                  {post.excerpt && <p>{post.excerpt}</p>}
-                </div>
-                <div className="admin-post-actions">
-                  <button
-                    className="admin-edit"
-                    onClick={() => startEdit(post)}
-                    title="Editar publicação"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    className="admin-delete"
-                    onClick={() => post.id && handleDelete(post.id)}
-                    title="Excluir publicação"
-                  >
-                    Excluir
-                  </button>
-                </div>
-              </article>
-            ))}
+            <div className="admin-post-grid">
+              {posts.map((post) => (
+                <article key={post.id} className="admin-post card">
+                  <div>
+                    <span className="admin-post-date">{post.date}</span>
+                    <h3>
+                      {post.fileUrl ? (
+                        <a href={post.fileUrl} target="_blank" rel="noreferrer">
+                          {post.title} 📎
+                        </a>
+                      ) : (
+                        post.title
+                      )}
+                    </h3>
+                    {post.excerpt && <p>{post.excerpt}</p>}
+                  </div>
+                  <div className="admin-post-actions">
+                    <button
+                      className="admin-edit"
+                      onClick={() => startEdit(post)}
+                      title="Editar publicação"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      className="admin-delete"
+                      onClick={() => post.id && handleDelete(post.id)}
+                      title="Excluir publicação"
+                    >
+                      Excluir
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
           </section>
+
+          {modalOpen && (
+            <div className="admin-modal-overlay" onClick={closeModal}>
+              <form
+                className="admin-form admin-modal card"
+                onClick={(e) => e.stopPropagation()}
+                onSubmit={handleSubmit}
+              >
+                <button
+                  type="button"
+                  className="admin-modal-close"
+                  onClick={closeModal}
+                  aria-label="Fechar"
+                >
+                  ×
+                </button>
+                <h2>
+                  {editing
+                    ? `Editando publicação em ${SECTION_LABELS[section]}`
+                    : `Nova publicação em ${SECTION_LABELS[section]}`}
+                </h2>
+                <label>
+                  Título *
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Ex.: Edital nº 06/2026 — Seleção de bolsistas"
+                    autoFocus
+                    required
+                  />
+                </label>
+                <label>
+                  Data / rótulo
+                  <input
+                    type="text"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    placeholder="Deixe em branco para usar a data de hoje (ou escreva “PDF”, um nome de autor…)"
+                  />
+                </label>
+                <label>
+                  Descrição
+                  <textarea
+                    value={excerpt}
+                    onChange={(e) => setExcerpt(e.target.value)}
+                    rows={3}
+                    placeholder="Resumo curto exibido abaixo do título"
+                  />
+                </label>
+                <label>
+                  Arquivo (opcional — PDF, DOC…)
+                  <input
+                    key={fileKey}
+                    type="file"
+                    onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                  />
+                  {editing?.fileUrl && (
+                    <span className="admin-file-note">
+                      Arquivo atual:{' '}
+                      <a href={editing.fileUrl} target="_blank" rel="noreferrer">
+                        abrir 📎
+                      </a>{' '}
+                      — envie um novo arquivo apenas se quiser substituí-lo.
+                    </span>
+                  )}
+                </label>
+                {error && <span className="admin-error">{error}</span>}
+                <div className="admin-form-actions">
+                  <button className="btn btn-primary" type="submit" disabled={loading || !title.trim()}>
+                    {loading ? 'Salvando…' : editing ? 'Salvar alterações' : 'Publicar'}
+                  </button>
+                  <button type="button" className="admin-cancel" onClick={closeModal}>
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
           </>
           )}
         </main>
