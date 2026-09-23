@@ -9,7 +9,7 @@ export default function Noticias() {
       <PageHeader
         eyebrow="Institucional"
         title="Notícias"
-        description="Mural geral do site: toda publicação feita em qualquer área — Ensino, Pesquisa, Extensão e Institucional — aparece aqui também."
+        description="Últimas notícias e publicações da Fatec Ivaiporã, reunindo Ensino, Pesquisa, Extensão e Institucional em um só lugar."
       />
       <section className="section">
         <div className="container">

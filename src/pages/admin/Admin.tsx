@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import type { User } from 'firebase/auth'
 import { Link } from 'react-router-dom'
@@ -35,6 +35,15 @@ const SECTION_GROUPS: { label: string; sections: Section[] }[] = [
 
 function groupOf(section: Section): string {
   return SECTION_GROUPS.find((g) => g.sections.includes(section))?.label ?? SECTION_GROUPS[0].label
+}
+
+const PAGE_SIZE = 10
+
+function formatPublishedAt(iso?: string): string | null {
+  if (!iso) return null
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return null
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
 export default function Admin() {
@@ -106,6 +115,8 @@ function AdminPanel() {
   const [section, setSection] = useState<Section>('noticias')
   const [openGroup, setOpenGroup] = useState<string>(() => groupOf('noticias'))
   const [posts, setPosts] = useState<Post[]>([])
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
   const [editing, setEditing] = useState<Post | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [title, setTitle] = useState('')
@@ -121,6 +132,16 @@ function AdminPanel() {
       .then(setPosts)
       .catch(() => setPosts([]))
   }, [section])
+
+  const filteredPosts = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return posts
+    return posts.filter((p) => p.title.toLowerCase().includes(q))
+  }, [posts, search])
+
+  const totalPages = Math.max(1, Math.ceil(filteredPosts.length / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const paginatedPosts = filteredPosts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
 
   useEffect(() => {
     if (!modalOpen) return
@@ -144,8 +165,15 @@ function AdminPanel() {
     setView('posts')
     setSection(s)
     setOpenGroup(groupOf(s))
+    setSearch('')
+    setPage(1)
     setError('')
     clearForm()
+  }
+
+  function handleSearchChange(value: string) {
+    setSearch(value)
+    setPage(1)
   }
 
   function openCreate() {
@@ -186,6 +214,8 @@ function AdminPanel() {
       } else {
         const post = await createPost(section, { title, date, excerpt, file })
         setPosts((prev) => [post, ...prev])
+        setSearch('')
+        setPage(1)
       }
       clearForm()
       setModalOpen(false)
@@ -282,47 +312,92 @@ function AdminPanel() {
                 + Nova publicação
               </button>
             </div>
-            {posts.length === 0 && (
+            {posts.length > 0 && (
+              <input
+                type="search"
+                className="admin-search"
+                placeholder="Buscar por título…"
+                value={search}
+                onChange={(e) => handleSearchChange(e.target.value)}
+              />
+            )}
+
+            {posts.length === 0 ? (
               <p className="admin-empty">
                 Nada publicado pelo painel ainda nesta seção. O conteúdo fixo do site continua
                 aparecendo normalmente.
               </p>
+            ) : filteredPosts.length === 0 ? (
+              <p className="admin-empty">Nenhuma publicação encontrada para “{search}”.</p>
+            ) : (
+              <>
+                <div className="admin-post-grid">
+                  {paginatedPosts.map((post) => {
+                    const publishedAt = formatPublishedAt(post.createdAt)
+                    return (
+                      <article key={post.id} className="admin-post card">
+                        <div>
+                          <span className="admin-post-date">{post.date}</span>
+                          <h3>
+                            {post.fileUrl ? (
+                              <a href={post.fileUrl} target="_blank" rel="noreferrer">
+                                {post.title} 📎
+                              </a>
+                            ) : (
+                              post.title
+                            )}
+                          </h3>
+                          {post.excerpt && <p>{post.excerpt}</p>}
+                          {publishedAt && (
+                            <span className="admin-post-published">Publicado em {publishedAt}</span>
+                          )}
+                        </div>
+                        <div className="admin-post-actions">
+                          <button
+                            className="admin-edit"
+                            onClick={() => startEdit(post)}
+                            title="Editar publicação"
+                          >
+                            Editar
+                          </button>
+                          <button
+                            className="admin-delete"
+                            onClick={() => post.id && handleDelete(post.id)}
+                            title="Excluir publicação"
+                          >
+                            Excluir
+                          </button>
+                        </div>
+                      </article>
+                    )
+                  })}
+                </div>
+
+                {totalPages > 1 && (
+                  <div className="admin-pagination">
+                    <button
+                      type="button"
+                      className="admin-page-btn"
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      ← Anterior
+                    </button>
+                    <span className="admin-page-info">
+                      Página {currentPage} de {totalPages}
+                    </span>
+                    <button
+                      type="button"
+                      className="admin-page-btn"
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                    >
+                      Próxima →
+                    </button>
+                  </div>
+                )}
+              </>
             )}
-            <div className="admin-post-grid">
-              {posts.map((post) => (
-                <article key={post.id} className="admin-post card">
-                  <div>
-                    <span className="admin-post-date">{post.date}</span>
-                    <h3>
-                      {post.fileUrl ? (
-                        <a href={post.fileUrl} target="_blank" rel="noreferrer">
-                          {post.title} 📎
-                        </a>
-                      ) : (
-                        post.title
-                      )}
-                    </h3>
-                    {post.excerpt && <p>{post.excerpt}</p>}
-                  </div>
-                  <div className="admin-post-actions">
-                    <button
-                      className="admin-edit"
-                      onClick={() => startEdit(post)}
-                      title="Editar publicação"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      className="admin-delete"
-                      onClick={() => post.id && handleDelete(post.id)}
-                      title="Excluir publicação"
-                    >
-                      Excluir
-                    </button>
-                  </div>
-                </article>
-              ))}
-            </div>
           </section>
 
           {modalOpen && (

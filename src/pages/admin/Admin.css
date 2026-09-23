@@ -380,6 +380,15 @@
   font-size: 0.9rem;
 }
 
+.admin-search {
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-size: 0.9rem;
+  max-width: 320px;
+}
+
 .admin-post-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -418,6 +427,13 @@
   color: var(--blue);
   margin-bottom: 6px;
   font-style: italic;
+}
+
+.admin-post-published {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: var(--ink-soft);
 }
 
 .admin-post h3 {
@@ -497,6 +513,37 @@
 
 .admin-cancel:hover {
   color: var(--ink);
+}
+
+.admin-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.admin-page-btn {
+  border: 1px solid var(--border);
+  background: var(--paper);
+  color: var(--navy);
+  border-radius: var(--radius);
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.admin-page-btn:hover:not(:disabled) {
+  background: #eef4f8;
+}
+
+.admin-page-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.admin-page-info {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
 }
 
 /* ---------- Modal de publicação ---------- */
