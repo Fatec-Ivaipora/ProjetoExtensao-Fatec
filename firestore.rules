@@ -1,0 +1,37 @@
+rules_version = '2';
+
+// Leitura pública das seções do site + configurações (destaques da home).
+// Escrita sempre negada pro client: toda publicação/edição/exclusão passa
+// pelas serverless functions em api/, que usam o Admin SDK (ignora estas regras)
+// depois de validar o login do admin e aplicar rate limiting.
+// Qualquer coleção fora desta lista (ex.: rateLimits, usada internamente pelo
+// rate limiter) fica inacessível ao client por padrão — sem regra, sem acesso.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{collection}/{docId} {
+      allow read: if collection in [
+        'noticias',
+        'editais',
+        'regimentos',
+        'formularios',
+        'revista',
+        'medicinaEvidencia',
+        'graduacao',
+        'residencias',
+        'monitoria',
+        'picv',
+        'gruposPesquisa',
+        'tccTcr',
+        'cep',
+        'projetoIntegrador',
+        'projetosExtensao',
+        'cursosExtensao',
+        'atividadesExtensao',
+        'sucupira',
+        'fundacoesAssociacoes',
+        'settings'
+      ];
+      allow write: if false;
+    }
+  }
+}
