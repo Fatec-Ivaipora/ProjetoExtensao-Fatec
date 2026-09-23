@@ -9,6 +9,56 @@ type PostListProps = {
 
 const PAGE_SIZE = 10
 
+function formatPublishedAt(iso?: string): string | null {
+  if (!iso) return null
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return null
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
+function FileIcon() {
+  return (
+    <svg className="post-file-icon" viewBox="0 0 16 16" aria-hidden="true">
+      <path
+        d="M4 1.5h5.5L12.5 4.5V13a1.5 1.5 0 0 1-1.5 1.5H4A1.5 1.5 0 0 1 2.5 13V3A1.5 1.5 0 0 1 4 1.5Z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinejoin="round"
+      />
+      <path d="M9.2 1.6V4.5h2.9" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function PostCard({ post }: { post: Post }) {
+  const publishedAt = formatPublishedAt(post.createdAt)
+  const body = (
+    <>
+      <div className="post-card-top">
+        {post.sectionLabel && <span className="post-section-tag">{post.sectionLabel}</span>}
+        {publishedAt && <time className="post-published">{publishedAt}</time>}
+      </div>
+      <h3>
+        {post.title}
+        {post.fileUrl && <FileIcon />}
+      </h3>
+      {post.date && <span className="post-date-label">{post.date}</span>}
+      {post.excerpt && <p>{post.excerpt}</p>}
+    </>
+  )
+
+  if (post.fileUrl) {
+    return (
+      <a className="post-card card" href={post.fileUrl} target="_blank" rel="noreferrer">
+        {body}
+      </a>
+    )
+  }
+
+  return <article className="post-card card">{body}</article>
+}
+
 export default function PostList({ posts }: PostListProps) {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
@@ -46,23 +96,10 @@ export default function PostList({ posts }: PostListProps) {
         <p className="post-list-empty">Nenhuma publicação encontrada para “{search}”.</p>
       ) : (
         <>
-          <div className="post-list">
+          <div className="post-grid">
             {paginated.map((post, index) => (
               <Reveal delay={index * 60} key={post.id ?? post.title}>
-                <article className="post-card card">
-                  {post.sectionLabel && <span className="post-section-tag">{post.sectionLabel}</span>}
-                  <span className="post-date">{post.date}</span>
-                  <h3>
-                    {post.fileUrl ? (
-                      <a className="post-file-link" href={post.fileUrl} target="_blank" rel="noreferrer">
-                        {post.title} 📎
-                      </a>
-                    ) : (
-                      post.title
-                    )}
-                  </h3>
-                  {post.excerpt && <p>{post.excerpt}</p>}
-                </article>
+                <PostCard post={post} />
               </Reveal>
             ))}
           </div>
