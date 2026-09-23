@@ -20,7 +20,22 @@ import {
 import type { Section } from '../../lib/api'
 import './Admin.css'
 
-const SECTIONS = Object.keys(SECTION_LABELS) as Section[]
+// Mesmas categorias do menu do site (src/components/Header.tsx), mais duas pra
+// cobrir as seções que o admin gerencia mas não aparecem no menu público.
+const SECTION_GROUPS: { label: string; sections: Section[] }[] = [
+  { label: 'Ensino', sections: ['graduacao', 'residencias', 'monitoria'] },
+  { label: 'Pesquisa', sections: ['tccTcr', 'gruposPesquisa', 'picv', 'cep', 'sucupira'] },
+  {
+    label: 'Extensão',
+    sections: ['projetoIntegrador', 'projetosExtensao', 'cursosExtensao', 'atividadesExtensao'],
+  },
+  { label: 'Publicações', sections: ['noticias', 'editais', 'regimentos', 'formularios', 'revista'] },
+  { label: 'Institucional', sections: ['medicinaEvidencia', 'fundacoesAssociacoes'] },
+]
+
+function groupOf(section: Section): string {
+  return SECTION_GROUPS.find((g) => g.sections.includes(section))?.label ?? SECTION_GROUPS[0].label
+}
 
 export default function Admin() {
   const [user, setUser] = useState<User | null | undefined>(undefined)
@@ -89,6 +104,7 @@ function AdminLogin() {
 function AdminPanel() {
   const [view, setView] = useState<'posts' | 'highlights'>('posts')
   const [section, setSection] = useState<Section>('noticias')
+  const [openGroup, setOpenGroup] = useState<string>(() => groupOf('noticias'))
   const [posts, setPosts] = useState<Post[]>([])
   const [editing, setEditing] = useState<Post | null>(null)
   const [title, setTitle] = useState('')
@@ -118,6 +134,7 @@ function AdminPanel() {
   function changeSection(s: Section) {
     setView('posts')
     setSection(s)
+    setOpenGroup(groupOf(s))
     setMessage('')
     setError('')
     clearForm()
@@ -195,17 +212,39 @@ function AdminPanel() {
 
       <div className="admin-body">
         <aside className="admin-sections">
-          {SECTIONS.map((s) => (
-            <button
-              key={s}
-              className={
-                view === 'posts' && s === section ? 'admin-section-btn active' : 'admin-section-btn'
-              }
-              onClick={() => changeSection(s)}
-            >
-              {SECTION_LABELS[s]}
-            </button>
-          ))}
+          {SECTION_GROUPS.map((group) => {
+            const isOpen = openGroup === group.label
+            return (
+              <div className="admin-category" key={group.label}>
+                <button
+                  type="button"
+                  className={isOpen ? 'admin-category-header is-open' : 'admin-category-header'}
+                  aria-expanded={isOpen}
+                  onClick={() => setOpenGroup((g) => (g === group.label ? '' : group.label))}
+                >
+                  {group.label}
+                  <span className="chevron" aria-hidden="true"></span>
+                </button>
+                {isOpen && (
+                  <div className="admin-category-items">
+                    {group.sections.map((s) => (
+                      <button
+                        key={s}
+                        className={
+                          view === 'posts' && s === section
+                            ? 'admin-section-btn active'
+                            : 'admin-section-btn'
+                        }
+                        onClick={() => changeSection(s)}
+                      >
+                        {SECTION_LABELS[s]}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          })}
           <hr className="admin-sections-divider" />
           <button
             className={view === 'highlights' ? 'admin-section-btn active' : 'admin-section-btn'}

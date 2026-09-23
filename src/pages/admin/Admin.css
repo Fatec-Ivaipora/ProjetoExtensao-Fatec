@@ -124,6 +124,62 @@
   top: 24px;
 }
 
+.admin-category {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  text-align: left;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--paper);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--navy);
+  transition: background 0.15s ease;
+}
+
+.admin-category-header:hover {
+  background: #eef4f8;
+}
+
+.admin-category-header .chevron {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid var(--ink-soft);
+  border-bottom: 2px solid var(--ink-soft);
+  transform: rotate(45deg);
+  transition: transform 0.15s ease;
+}
+
+.admin-category-header.is-open .chevron {
+  transform: rotate(-135deg);
+}
+
+.admin-category-items {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 10px;
+  border-left: 2px solid var(--border);
+  margin-left: 6px;
+}
+
+.admin-category-items .admin-section-btn {
+  padding: 8px 14px;
+  font-size: 0.83rem;
+}
+
 .admin-section-btn {
   text-align: left;
   padding: 11px 16px;
