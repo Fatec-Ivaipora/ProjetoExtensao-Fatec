@@ -1,10 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { HIGHLIGHT_KEYS } from '../shared/sections'
-import { requireAdmin } from './_lib/auth'
-import { getAdminDb } from './_lib/firebaseAdmin'
-import { withErrorHandling } from './_lib/handler'
-import { HttpError } from './_lib/httpError'
-import { rateLimit } from './_lib/rateLimit'
+import { HIGHLIGHT_KEYS } from '../shared/sections.js'
+import { requireAdmin } from './_lib/auth.js'
+import { getAdminDb } from './_lib/firebaseAdmin.js'
+import { withErrorHandling } from './_lib/handler.js'
+import { HttpError } from './_lib/httpError.js'
+import { rateLimit } from './_lib/rateLimit.js'
 
 const VALID_KEYS: readonly string[] = HIGHLIGHT_KEYS
 

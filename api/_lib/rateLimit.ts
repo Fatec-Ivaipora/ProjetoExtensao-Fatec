@@ -1,6 +1,6 @@
 import type { VercelRequest } from '@vercel/node'
-import { getAdminDb } from './firebaseAdmin'
-import { HttpError } from './httpError'
+import { getAdminDb } from './firebaseAdmin.js'
+import { HttpError } from './httpError.js'
 
 function clientIp(req: VercelRequest): string {
   const forwarded = req.headers['x-forwarded-for']

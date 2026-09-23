@@ -6,9 +6,10 @@
     "types": ["node"],
     "skipLibCheck": true,
 
-    /* Bundler mode — as funções são compiladas pelo esbuild da Vercel, não pelo node nativo */
-    "module": "esnext",
-    "moduleResolution": "bundler",
+    /* package.json tem "type": "module" — a Vercel compila as functions como ESM nativo do
+       Node, que exige extensão .js explícita em import relativo mesmo apontando pra um .ts */
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
     "noEmit": true,

@@ -1,6 +1,6 @@
 import type { VercelRequest } from '@vercel/node'
-import { getAdminAuth } from './firebaseAdmin'
-import { HttpError } from './httpError'
+import { getAdminAuth } from './firebaseAdmin.js'
+import { HttpError } from './httpError.js'
 
 /**
  * Confere o ID token do Firebase Auth enviado no header Authorization e exige

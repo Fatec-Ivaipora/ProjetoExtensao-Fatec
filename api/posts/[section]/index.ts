@@ -1,11 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { randomUUID } from 'node:crypto'
-import { isSection } from '../../../shared/sections'
-import { requireAdmin } from '../../_lib/auth'
-import { getAdminDb } from '../../_lib/firebaseAdmin'
-import { withErrorHandling } from '../../_lib/handler'
-import { HttpError } from '../../_lib/httpError'
-import { rateLimit } from '../../_lib/rateLimit'
+import { isSection } from '../../../shared/sections.js'
+import { requireAdmin } from '../../_lib/auth.js'
+import { getAdminDb } from '../../_lib/firebaseAdmin.js'
+import { withErrorHandling } from '../../_lib/handler.js'
+import { HttpError } from '../../_lib/httpError.js'
+import { rateLimit } from '../../_lib/rateLimit.js'
 
 export default withErrorHandling(async (req: VercelRequest, res: VercelResponse) => {
   if (req.method !== 'POST') {

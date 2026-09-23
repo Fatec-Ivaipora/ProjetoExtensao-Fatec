@@ -1,9 +1,9 @@
 import { handleUpload, type HandleUploadBody } from '@vercel/blob/client'
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { requireAdmin } from '../_lib/auth'
-import { withErrorHandling } from '../_lib/handler'
-import { HttpError } from '../_lib/httpError'
-import { rateLimit } from '../_lib/rateLimit'
+import { requireAdmin } from '../_lib/auth.js'
+import { withErrorHandling } from '../_lib/handler.js'
+import { HttpError } from '../_lib/httpError.js'
+import { rateLimit } from '../_lib/rateLimit.js'
 
 const ALLOWED_CONTENT_TYPES = [
   'application/pdf',

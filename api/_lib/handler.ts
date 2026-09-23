@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { HttpError } from './httpError'
+import { HttpError } from './httpError.js'
 
 /** Envolve um handler de rota: converte HttpError em resposta JSON e trata erros inesperados. */
 export function withErrorHandling(
